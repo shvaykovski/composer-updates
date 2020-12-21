@@ -21,7 +21,7 @@ $tableHeaderHtml = <<<TABLEHEADER
                     <th>Package name</th>
                     <th>Version from Composer</th>
                     <th>The real version</th>
-                    <th>The Latest version</th>
+                    <th>The latest version</th>
                     <th>Upgrade steps</th>
                     <th>Is abandoned</th>
                     <th>Description</th>

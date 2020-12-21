@@ -21,7 +21,7 @@ $tableHeaderHtml = <<<TABLEHEADER
                     <th>Package name</th>
                     <th>Version from Composer</th>
                     <th>The real version</th>
-                    <th>The Latest version</th>
+                    <th>The latest version</th>
                     <th>Upgrade steps</th>
                     <th>Is abandoned</th>
                     <th>Description</th>
@@ -81,8 +81,9 @@ HEAD;
 echo "<h2>Required packages</h2>";
 echo $tableHeaderHtml;
 foreach ($report->require as $row) {
+    $class = ($row->abandoned !== null) ? ' table-warning' : '';
     echo sprintf($rowHtml,
-        $row->semanticVersioning,
+        $row->semanticVersioning . $class,
         $row->name,
         $row->composerRequirement,
         $row->currentVersion,
@@ -97,8 +98,9 @@ echo $tableFooterHtml;
 echo "<h2>Dev packages</h2>";
 echo $tableHeaderHtml;
 foreach ($report->requireDev as $row) {
+    $class = ($row->abandoned !== null) ? ' table-warning' : '';
     echo sprintf($rowHtml,
-        $row->semanticVersioning,
+        $row->semanticVersioning . $class,
         $row->name,
         $row->composerRequirement,
         $row->currentVersion,

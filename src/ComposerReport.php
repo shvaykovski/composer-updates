@@ -17,6 +17,11 @@ class ComposerReport
     protected const KEY_PACKAGES = 'packages';
     protected const KEY_PACKAGES_DEV = 'packages-dev';
 
+    protected const SEMANTIC_VERSIONING_MAJOR = 'major';
+    protected const SEMANTIC_VERSIONING_MINOR = 'minor';
+    protected const SEMANTIC_VERSIONING_PATCH = 'patch';
+    protected const SEMANTIC_VERSIONING_UNKNOWN = 'unknown';
+
     /**
      * @var array
      */
@@ -70,6 +75,7 @@ class ComposerReport
     /**
      * @param array $packages
      * @param array $lockData
+     *
      * @return ReportRowObject[]
      */
     protected function generateBLock(array $packages, array $lockData): array
@@ -81,17 +87,14 @@ class ComposerReport
                 $lockRowData = $lockData[$packageName];
                 $packagistData = new PackagistData($packageName);
 
-                $currentVersion = $lockRowData[self::KEY_VERSION];
+                $currentVersion = $lockRowData[static::KEY_VERSION];
                 $latestVersion = $packagistData->getLatestVersion();
 
                 if ($currentVersion == $latestVersion) {
                     continue;
                 }
 
-                $upgradeSteps = $packagistData->getUpgradeStepsToLatest($lockRowData[self::KEY_VERSION]);
-                if (empty($upgradeSteps)) {
-                    $upgradeSteps = [$latestVersion];
-                }
+                $upgradeSteps = $packagistData->getUpgradeStepsToLatest($lockRowData[static::KEY_VERSION]);
 
                 $row = new ReportRowObject();
                 $row->name = $packageName;
@@ -99,8 +102,9 @@ class ComposerReport
                 $row->currentVersion = $currentVersion;
                 $row->latestVersion = $latestVersion;
                 $row->upgradeSteps = $upgradeSteps;
-                $row->description = $lockRowData[self::KEY_DESCRIPTION];
+                $row->description = $lockRowData[static::KEY_DESCRIPTION];
                 $row->abandoned = $packagistData->abandonedData();
+                $row->semanticVersioning = $this->getSemanticVersioning($packagistData, $currentVersion);
 
                 $report[] = $row;
             }
@@ -110,18 +114,58 @@ class ComposerReport
     }
 
     /**
+     * @param PackagistData $packagistData
+     * @param string $currentVersion
+     *
+     * @return string
+     */
+    protected function getSemanticVersioning(PackagistData $packagistData, string $currentVersion): string
+    {
+        $currentVersion = $packagistData->getCurrentNormalizedVersion($currentVersion);
+        $latestVersion = $packagistData->getLatestVersion(true);
+
+        // For dev to major release cases
+        if (!$currentVersion || !$latestVersion) {
+            return static::SEMANTIC_VERSIONING_MAJOR;
+        }
+
+        $currentVersionArr = explode('.', $currentVersion);
+        $latestVersionArr = explode('.', $latestVersion);
+
+        if (count($currentVersionArr) === 2 && count($latestVersionArr) === 2
+            && (int)$currentVersionArr[0] < (int)$latestVersionArr[0]
+        ) {
+            return static::SEMANTIC_VERSIONING_MAJOR;
+        }
+
+        if (count($currentVersionArr) < 3 || count($latestVersionArr) < 3) {
+            return static::SEMANTIC_VERSIONING_UNKNOWN;
+        }
+
+        if ((int)$currentVersionArr[0] < (int)$latestVersionArr[0]) {
+            return static::SEMANTIC_VERSIONING_MAJOR;
+        }
+
+        if ((int)$currentVersionArr[1] < (int)$latestVersionArr[1]) {
+            return static::SEMANTIC_VERSIONING_MINOR;
+        }
+
+        return static::SEMANTIC_VERSIONING_PATCH;
+    }
+
+    /**
      * @return array
      */
     protected function getLockPackages(): array
     {
         $packages = [];
 
-        if (isset($this->composerLockData[self::KEY_PACKAGES])) {
-            $packages += $this->transformData($this->composerLockData[self::KEY_PACKAGES]);
+        if (isset($this->composerLockData[static::KEY_PACKAGES])) {
+            $packages += $this->transformData($this->composerLockData[static::KEY_PACKAGES]);
         }
 
-        if (isset($this->composerLockData[ self::KEY_PACKAGES_DEV])) {
-            $packages += $this->transformData($this->composerLockData[self::KEY_PACKAGES_DEV]);
+        if (isset($this->composerLockData[ static::KEY_PACKAGES_DEV])) {
+            $packages += $this->transformData($this->composerLockData[static::KEY_PACKAGES_DEV]);
         }
 
         return $packages;
@@ -129,11 +173,12 @@ class ComposerReport
 
     /**
      * @param bool $isDev
+     *
      * @return array
      */
     protected function getRequirePackages(bool $isDev = false): array
     {
-        $key = $isDev ? self::KEY_REQUIRE_DEV : self::KEY_REQUIRE;
+        $key = $isDev ? static::KEY_REQUIRE_DEV : static::KEY_REQUIRE;
 
         if (isset($this->composerJsonData[$key])) {
             return $this->composerJsonData[$key];
@@ -146,6 +191,7 @@ class ComposerReport
      * Fetch only a name as a key and a version and a description as a value.
      *
      * @param array $data
+     *
      * @return array
      */
     protected function transformData(array $data): array
@@ -153,9 +199,9 @@ class ComposerReport
         $out = [];
 
         foreach ($data as $item) {
-            $out[$item[self::KEY_NAME]] = [
-                self::KEY_VERSION => $item[self::KEY_VERSION],
-                self::KEY_DESCRIPTION => isset($item[self::KEY_DESCRIPTION]) ? $item[self::KEY_DESCRIPTION] : null,
+            $out[$item[static::KEY_NAME]] = [
+                static::KEY_VERSION => $item[static::KEY_VERSION],
+                static::KEY_DESCRIPTION => isset($item[static::KEY_DESCRIPTION]) ? $item[static::KEY_DESCRIPTION] : null,
             ];
         }
 
@@ -164,6 +210,7 @@ class ComposerReport
 
     /**
      * @param string $filePath
+     *
      * @return array
      */
     protected function readJsonData(string $filePath): array

@@ -10,11 +10,6 @@ class ReportRowObject
     public $name;
 
     /**
-     * @var string
-     */
-    public $version;
-
-    /**
      * @var string|null
      */
     public $description;
@@ -43,4 +38,9 @@ class ReportRowObject
      * @var string|null
      */
     public $abandoned;
+
+    /**
+     * @var string|null
+     */
+    public $semanticVersioning;
 }

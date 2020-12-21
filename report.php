@@ -60,6 +60,13 @@ echo <<<HEAD
         <link rel="stylesheet" href="../assets/css/bootstrap.min.css" />
         <style>
             .container-fluid {margin: 15px 0;}
+            .abandoned {
+                background-image: linear-gradient(45deg, rgba(255, 0, 0, 0.1) 25%, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 0, 0, 0.1) 50%, rgba(255, 0, 0, 0.1) 75%, rgba(255, 255, 255, 0.1) 75%, rgba(255, 255, 255, 0.1) 100%);
+                background-size: 56.57px 56.57px;
+            }
+            .major {background-color: #e3a7a7;}
+            .minor {background-color: #fffbc7;}
+            .patch {background-color: #95be85;}
         </style>
     </head>
     <body>
@@ -78,7 +85,8 @@ HEAD;
 echo "<h2>Required packages</h2>";
 echo $tableHeaderHtml;
 foreach ($report->require as $row) {
-    $class = ($row->abandoned !== null) ? 'table-warning' : '';
+    $class =  ($row->abandoned !== null) ? 'abandoned' : $row->semanticVersioning;
+
     echo sprintf($rowHtml,
         $class,
         $row->name,
@@ -95,7 +103,8 @@ echo $tableFooterHtml;
 echo "<h2>Dev packages</h2>";
 echo $tableHeaderHtml;
 foreach ($report->requireDev as $row) {
-    $class = ($row->abandoned !== null) ? 'table-warning' : '';
+    $class =  ($row->abandoned !== null) ? 'abandoned' : $row->semanticVersioning;
+
     echo sprintf($rowHtml,
         $class,
         $row->name,

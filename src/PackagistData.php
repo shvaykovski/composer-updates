@@ -47,13 +47,15 @@ class PackagistData
     }
 
     /**
+     * @param bool $useNormalized
+     *
      * @return string|null
      */
-    public function getLatestVersion(): ?string
+    public function getLatestVersion(bool $useNormalized = false): ?string
     {
         if (count($this->versions) > 0) {
-            $allVersions = $this->getAllVersions();
-            return $allVersions[0];
+            $allVersions = $this->getAllVersions($useNormalized);
+            return end($allVersions);
         }
 
         return null;
@@ -61,28 +63,57 @@ class PackagistData
 
     /**
      * @param string $currentVersion
+     *
+     * @return string|null
+     */
+    public function getCurrentNormalizedVersion(string $currentVersion): ?string
+    {
+        $allVersions = $this->getAllVersions();
+        $currentVersionPosition = array_search($currentVersion, $allVersions);
+        $allNormalizedVersions = $this->getAllVersions(true);
+
+        if ($currentVersionPosition && isset($allNormalizedVersions[$currentVersionPosition])) {
+            return $allNormalizedVersions[$currentVersionPosition];
+        }
+
+        return null;
+    }
+
+    /**
+     * @param string $currentVersion
+     *
      * @return array
      */
     public function getUpgradeStepsToLatest(string $currentVersion): array
     {
+        $steps = [];
         $allVersions = $this->getAllVersions();
         $currentVersionPosition = array_search($currentVersion, $allVersions);
 
         if ($currentVersionPosition) {
-            return array_reverse(array_slice($allVersions, 0, $currentVersionPosition));
+            $steps = array_slice($allVersions, $currentVersionPosition);
         }
 
-        return [];
+        if (empty($steps)) {
+            $latestVersion = $this->getLatestVersion();
+            $steps = [$currentVersion, $latestVersion];
+        }
+
+        return $steps;
     }
 
     /**
+     * @param bool $useNormalized
+     *
      * @return array
      */
-    public function getAllVersions(): array
+    public function getAllVersions(bool $useNormalized = false): array
     {
-        $versionsList = array_column($this->versions, self::KEY_VERSION);
+        if ($useNormalized) {
+            return array_column($this->versions, self::KEY_VERSION_NORMALIZED);
+        }
 
-        return array_reverse($versionsList);
+        return array_column($this->versions, self::KEY_VERSION);
     }
 
     /**
@@ -102,6 +133,7 @@ class PackagistData
 
     /**
      * @param string $url
+     *
      * @return array
      */
     protected function getVersions(string $url): array
@@ -128,6 +160,7 @@ class PackagistData
 
     /**
      * @param string $url
+     *
      * @return string|null
      */
     protected function getPackagistData(string $url): ?string
@@ -151,6 +184,7 @@ class PackagistData
 
     /**
      * @param array $versions
+     *
      * @return array
      */
     protected function filterDevVersions(array $versions): array

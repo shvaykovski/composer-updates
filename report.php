@@ -38,7 +38,7 @@ $tableFooterHtml = <<<TABLEFOOTER
 TABLEFOOTER;
 
 $rowHtml = <<<ROW
-            <tr>
+            <tr class="%s">
                 <td>%s</td>
                 <td>%s</td>
                 <td>%s</td>
@@ -60,6 +60,9 @@ echo <<<HEAD
         <link rel="stylesheet" href="../assets/css/bootstrap.min.css" />
         <style>
             .container-fluid {margin: 15px 0;}
+            .major {background-color:#e3a7a7;}
+            .minor {background-color:#d0c094;}
+            .patch {background-color:#95be85;}
         </style>
     </head>
     <body>
@@ -79,6 +82,7 @@ echo "<h2>Required packages</h2>";
 echo $tableHeaderHtml;
 foreach ($report->require as $row) {
     echo sprintf($rowHtml,
+        $row->semanticVersioning,
         $row->name,
         $row->composerRequirement,
         $row->currentVersion,
@@ -94,6 +98,7 @@ echo "<h2>Dev packages</h2>";
 echo $tableHeaderHtml;
 foreach ($report->requireDev as $row) {
     echo sprintf($rowHtml,
+        $row->semanticVersioning,
         $row->name,
         $row->composerRequirement,
         $row->currentVersion,

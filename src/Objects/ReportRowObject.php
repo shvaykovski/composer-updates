@@ -43,4 +43,9 @@ class ReportRowObject
      * @var string|null
      */
     public $abandoned;
+
+    /**
+     * @var string|null
+     */
+    public $semanticVersioning;
 }

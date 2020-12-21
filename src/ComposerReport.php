@@ -17,6 +17,11 @@ class ComposerReport
     protected const KEY_PACKAGES = 'packages';
     protected const KEY_PACKAGES_DEV = 'packages-dev';
 
+    protected const SEMANTIC_VERSIONING_MAJOR = 'major';
+    protected const SEMANTIC_VERSIONING_MINOR = 'minor';
+    protected const SEMANTIC_VERSIONING_PATCH = 'patch';
+    protected const SEMANTIC_VERSIONING_UNKNOWN = 'unknown';
+
     /**
      * @var array
      */
@@ -101,12 +106,45 @@ class ComposerReport
                 $row->upgradeSteps = $upgradeSteps;
                 $row->description = $lockRowData[self::KEY_DESCRIPTION];
                 $row->abandoned = $packagistData->abandonedData();
+                $row->semanticVersioning = $this->getSemanticVersioning($currentVersion, $latestVersion);
 
                 $report[] = $row;
             }
         }
 
         return $report;
+    }
+
+    /**
+     * @param string $currentVersion
+     * @param string $latestVersion
+     *
+     * @return string
+     */
+    protected function getSemanticVersioning($currentVersion, $latestVersion): string
+    {
+        $currentVersionArr = explode('.', $currentVersion);
+        $latestVersionArr = explode('.', $latestVersion);
+
+        if (count($currentVersionArr) === 2 && count($latestVersionArr) === 2
+            && (int)$currentVersionArr[0] < (int)$latestVersionArr[0]
+        ) {
+            return static::SEMANTIC_VERSIONING_MAJOR;
+        }
+
+        if (count($currentVersionArr) != 3 || count($latestVersionArr) != 3) {
+            return static::SEMANTIC_VERSIONING_UNKNOWN;
+        }
+
+        if ((int)$currentVersionArr[0] < (int)$latestVersionArr[0]) {
+            return static::SEMANTIC_VERSIONING_MAJOR;
+        }
+
+        if ((int)$currentVersionArr[1] < (int)$latestVersionArr[1]) {
+            return static::SEMANTIC_VERSIONING_MINOR;
+        }
+
+        return static::SEMANTIC_VERSIONING_PATCH;
     }
 
     /**

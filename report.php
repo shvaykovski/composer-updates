@@ -38,7 +38,7 @@ $tableFooterHtml = <<<TABLEFOOTER
 TABLEFOOTER;
 
 $rowHtml = <<<ROW
-            <tr>
+            <tr class="%s">
                 <td>%s</td>
                 <td>%s</td>
                 <td>%s</td>
@@ -78,7 +78,9 @@ HEAD;
 echo "<h2>Required packages</h2>";
 echo $tableHeaderHtml;
 foreach ($report->require as $row) {
+    $class = ($row->abandoned !== null) ? 'table-warning' : '';
     echo sprintf($rowHtml,
+        $class,
         $row->name,
         $row->composerRequirement,
         $row->currentVersion,
@@ -93,7 +95,9 @@ echo $tableFooterHtml;
 echo "<h2>Dev packages</h2>";
 echo $tableHeaderHtml;
 foreach ($report->requireDev as $row) {
+    $class = ($row->abandoned !== null) ? 'table-warning' : '';
     echo sprintf($rowHtml,
+        $class,
         $row->name,
         $row->composerRequirement,
         $row->currentVersion,

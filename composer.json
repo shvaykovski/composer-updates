@@ -1,0 +1,23 @@
+{
+    "name": "shvaykovski/composer-updates",
+    "description": "The tool for analyzing outdated Composer packages on your project",
+    "type": "library",
+    "require": {
+        "php": "^7.2",
+        "ext-json": "*",
+        "ext-hash": "*"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Maxim",
+            "email": "maxim@shvaykovski.com",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "shvaykovski\\ComposerUpdates\\": "src"
+        }
+    }
+}

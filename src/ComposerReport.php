@@ -123,6 +123,8 @@ class ComposerReport
      */
     protected function getSemanticVersioning($currentVersion, $latestVersion): string
     {
+        $currentVersion = $this->removePrefix($currentVersion, 'v');
+        $latestVersion = $this->removePrefix($latestVersion, 'v');
         $currentVersionArr = explode('.', $currentVersion);
         $latestVersionArr = explode('.', $latestVersion);
 
@@ -145,6 +147,21 @@ class ComposerReport
         }
 
         return static::SEMANTIC_VERSIONING_PATCH;
+    }
+
+    /**
+     * @param string $string
+     * @param string $prefix
+     *
+     * @return string
+     */
+    protected function removePrefix($string, $prefix): string
+    {
+        if (substr($string, 0, strlen($prefix)) === $prefix) {
+            $string = substr($string, strlen($prefix));
+        }
+
+        return $string;
     }
 
     /**

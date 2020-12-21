@@ -5,8 +5,7 @@ The tool for analyzing outdated Composer packages on your project.
 
 ### Requirements
 
-- **PHP**
-- **Composer**
+- **PHP 7.2+**
 
 ### Make a report
 

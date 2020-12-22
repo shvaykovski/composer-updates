@@ -89,8 +89,9 @@ class ComposerReport
 
                 $currentVersion = $lockRowData[static::KEY_VERSION];
                 $latestVersion = $packagistData->getLatestVersion();
+                $versionsCheck = version_compare($currentVersion, $latestVersion, '>=');
 
-                if ($currentVersion == $latestVersion) {
+                if ($versionsCheck) {
                     continue;
                 }
 

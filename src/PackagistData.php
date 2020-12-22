@@ -95,8 +95,7 @@ class PackagistData
         }
 
         if (empty($steps)) {
-            $latestVersion = $this->getLatestVersion();
-            $steps = [$currentVersion, $latestVersion];
+            $steps = [$currentVersion] + $allVersions;
         }
 
         return $steps;

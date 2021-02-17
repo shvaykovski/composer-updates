@@ -4,3 +4,5 @@ vendor
 reports
 .idea
 composer.phar
+# OS
+.DS_Store

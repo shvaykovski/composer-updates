@@ -13,3 +13,10 @@ Run:
 ```bash
 /usr/bin/php -f report.php <PROJECT_PATH> > reports/report.html
    ```
+
+### Compare 2 reports
+
+Run:
+```bash
+/usr/bin/php -f compare.php reports/report1.html reports/report2.html > reports/compare.html
+   ```

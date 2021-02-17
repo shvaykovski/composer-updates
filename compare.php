@@ -18,34 +18,35 @@ $report2->loadHTMLFile($argv[2]);
 $reportXpath1 = new DOMXpath($report1);
 $reportXpath2 = new DOMXpath($report2);
 
-$tables1 = $reportXpath1->query('//table');
-$tables2 = $reportXpath2->query('//table');
+$tablesReport1 = $reportXpath1->query('//table');
+$tablesReport2 = $reportXpath2->query('//table');
+
+/**
+ * @param DOMXpath $reportXpath
+ * @param DOMNode $table
+ *
+ * @return array
+ */
+function findPackagesFromXpath(DOMXpath $reportXpath, DOMNode $table): array
+{
+    $packages = [];
+    $trs = $reportXpath->query('.//tbody/tr', $table);
+    foreach ($trs as $tr) {
+        $class = $tr->getAttribute('class');
+        $td = $reportXpath->query('.//td[position()=1]', $tr);
+        $packages[$td[0]->nodeValue] = $class;
+    }
+
+    return $packages;
+}
 
 //Required packages
-$requiredPackages1 = [];
-$requiredPackages2 = [];
-$tds1 = $reportXpath1->query('.//tbody/tr/td[position()=1]', $tables1[0]);
-foreach ($tds1 as $td) {
-    $requiredPackages1[] = $td->nodeValue;
-}
-
-$tds2 = $reportXpath1->query('.//tbody/tr/td[position()=1]', $tables2[0]);
-foreach ($tds2 as $td) {
-    $requiredPackages2[] = $td->nodeValue;
-}
+$requiredPackages1 = findPackagesFromXpath($reportXpath1, $tablesReport1[0]);
+$requiredPackages2 = findPackagesFromXpath($reportXpath2, $tablesReport2[0]);
 
 //Dev packages
-$devPackages1 = [];
-$devPackages2 = [];
-$tds1 = $reportXpath1->query('.//tbody/tr/td[position()=1]', $tables1[1]);
-foreach ($tds1 as $td) {
-    $devPackages1[] = $td->nodeValue;
-}
-
-$tds2 = $reportXpath1->query('.//tbody/tr/td[position()=1]', $tables2[1]);
-foreach ($tds2 as $td) {
-    $devPackages2[] = $td->nodeValue;
-}
+$devPackages1 = findPackagesFromXpath($reportXpath1, $tablesReport1[1]);
+$devPackages2 = findPackagesFromXpath($reportXpath2, $tablesReport2[1]);
 
 $tableHeaderHtml = <<<TABLEHEADER
         <table class="table table-bordered">
@@ -77,7 +78,7 @@ echo <<<HEAD
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-        <title>Composer packages updates report</title>
+        <title>Compare reports ${argv[1]} -> ${argv[2]}</title>
         <link rel="stylesheet" href="../assets/css/bootstrap.min.css" />
         <style>
             .container-fluid {margin: 15px 0;}
@@ -95,7 +96,7 @@ echo <<<HEAD
         <header class="blog-header py-3">
             <div class="row flex-nowrap justify-content-between align-items-center">
                 <div class="col-12 text-center">
-                    <h1>Composer packages updates report</h1>
+                    <h1>Compare reports ${argv[1]} -> ${argv[2]}</h1>
                 </div>
             </div>
         </header>
@@ -105,9 +106,10 @@ HEAD;
 
 echo "<h2>Required packages</h2>";
 echo $tableHeaderHtml;
-$packages = array_diff($requiredPackages1, $requiredPackages2);
-foreach ($packages as $item) {
-    $class =  '';
+foreach ($requiredPackages1 as $item => $class) {
+    if (isset($requiredPackages2[$item])) {
+        continue;
+    }
 
     echo sprintf($rowHtml,
         $class,
@@ -118,9 +120,10 @@ echo $tableFooterHtml;
 
 echo "<h2>Dev packages</h2>";
 echo $tableHeaderHtml;
-$packages = array_diff($devPackages1, $devPackages2);
-foreach ($packages as $item) {
-    $class =  '';
+foreach ($devPackages1 as $item => $class) {
+    if (isset($devPackages2[$item])) {
+        continue;
+    }
 
     echo sprintf($rowHtml,
         $class,
